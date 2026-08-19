@@ -20,6 +20,8 @@ Dodatek (plugin) do Miro do rzucania kośćmi RPG bezpośrednio na tablicy — p
 
 Pełna instrukcja krok po kroku znajduje się w [`SETUP.md`](./SETUP.md).
 
+Historia decyzji projektowych i napotkanych problemów — w [`DEVLOG.md`](./DEVLOG.md).
+
 ## Technologia
 
 - Miro SDK v2 (`https://miro.com/app/static/sdk/v2/miro.js`)
