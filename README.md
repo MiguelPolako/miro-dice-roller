@@ -9,7 +9,7 @@ Dodatek (plugin) do Miro do rzucania kośćmi RPG bezpośrednio na tablicy — p
 - **Advantage / Disadvantage** — jednym kliknięciem dla d20
 - **Animacja rzutu** — krótkie "losowanie" cyfr przed pokazaniem wyniku
 - **Log rzutów na żywo** — widoczny dla wszystkich, którzy mają panel otwarty (synchronizacja przez `miro.board.storage`)
-- **Wyślij wynik na tablicę** — stawia wynik jako element tekstowy widoczny dla wszystkich, nawet bez otwartego panelu
+- **Wyślij wynik na tablicę** — dopisuje wynik do zaznaczonego elementu tekstowego (np. logu sesji), albo stawia nowy element widoczny dla wszystkich, nawet bez otwartego panelu
 
 ## Pliki
 

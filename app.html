@@ -130,7 +130,7 @@
   </div>
 
   <button class="btn btn-board btn-block" id="btn-post">📌 Wyślij wynik na tablicę</button>
-  <p class="hint">Umieszcza ostatni wynik jako element tekstowy na tablicy, widoczny dla wszystkich — nawet bez otwartego panelu.</p>
+  <p class="hint">Jeśli masz zaznaczony element tekstowy na tablicy (np. Twój log sesji) — dopisze do niego wynik. W przeciwnym razie utworzy nowy element w widoku. Widoczne dla wszystkich, nawet bez otwartego panelu.</p>
 
   <hr/>
 
@@ -257,6 +257,8 @@
     }
 
     // ── Wyślij wynik na tablicę ─────────────────────────────────
+    // Jeśli zaznaczony jest dokładnie jeden element tekstowy (text/sticky_note),
+    // dopisuje do niego wynik. W przeciwnym razie tworzy nowy element w widoku.
     btnPost.addEventListener('click', async () => {
       if (!lastRollText) {
         setStatus('❌ Najpierw wykonaj rzut.');
@@ -264,17 +266,30 @@
       }
       btnPost.disabled = true;
       try {
-        const viewport = await miro.board.viewport.get();
-        const x = viewport.x + viewport.width / 2 + (Math.random() - 0.5) * 100;
-        const y = viewport.y + viewport.height / 2 + (Math.random() - 0.5) * 100;
-        await miro.board.createText({
-          content: lastRollText,
-          x,
-          y,
-          width: 300,
-          style: { fontSize: 16, textAlign: 'center' },
-        });
-        setStatus('✅ Wynik dodany do tablicy.');
+        const selection = await miro.board.getSelection();
+        const textItems = selection.filter(i => i.type === 'text' || i.type === 'sticky_note');
+
+        if (textItems.length === 1) {
+          const item = textItems[0];
+          const line = `<p>${escapeHtml(lastRollText)}</p>`;
+          item.content = item.content ? item.content + line : line;
+          await item.sync();
+          setStatus('✅ Dopisano wynik do zaznaczonego tekstu.');
+        } else {
+          const viewport = await miro.board.viewport.get();
+          const x = viewport.x + viewport.width / 2 + (Math.random() - 0.5) * 100;
+          const y = viewport.y + viewport.height / 2 + (Math.random() - 0.5) * 100;
+          await miro.board.createText({
+            content: lastRollText,
+            x,
+            y,
+            width: 300,
+            style: { fontSize: 16, textAlign: 'center' },
+          });
+          setStatus(textItems.length > 1
+            ? '⚠️ Zaznaczono więcej niż jeden element — dodano nowy zamiast dopisywać.'
+            : '✅ Wynik dodany jako nowy element. Wskazówka: zaznacz istniejący tekst na tablicy przed kliknięciem, żeby dopisywać wyniki do niego.');
+        }
       } catch (err) {
         setStatus(`❌ Błąd: ${err.message}`);
       }
