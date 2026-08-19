@@ -6,8 +6,9 @@
     <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
     <script>
       async function init() {
+        const panelUrl = new URL('app.html', document.baseURI).href;
         await miro.board.ui.on('icon:click', async () => {
-          await miro.board.ui.openPanel({ url: 'app.html' });
+          await miro.board.ui.openPanel({ url: panelUrl });
         });
       }
       init();
