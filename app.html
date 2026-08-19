@@ -225,7 +225,7 @@
       await animateResult(total);
       resultDetail.textContent = detail;
 
-      lastRollText = `🎲 ${currentUserName}: ${notation} → ${detail}`;
+      lastRollText = String(total);
 
       await appendToLog({
         name: currentUserName,
