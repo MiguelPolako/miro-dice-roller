@@ -1,4 +1,4 @@
-# 🚀 Jak uruchomić Dice Roller
+# 🚀 Jak uruchomić Kostki RPG
 
 ## Każdorazowo przed użyciem w Miro (dev lokalny)
 

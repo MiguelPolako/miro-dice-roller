@@ -1,4 +1,4 @@
-# 🎲 Dice Roller — dodatek do Miro
+# 🎲 Kostki RPG — dodatek do Miro
 
 Dodatek (plugin) do Miro do rzucania kośćmi RPG bezpośrednio na tablicy — presety (d4–d100) albo pełna notacja (`2d6+3`, `4d6kh3`, advantage/disadvantage), z logiem rzutów widocznym na żywo dla wszystkich uczestników.
 

@@ -1,4 +1,4 @@
-# 🎲 Dice Roller — Instrukcja konfiguracji
+# 🎲 Kostki RPG — Instrukcja konfiguracji
 
 > Krok po kroku, bez znajomości programowania
 
@@ -35,12 +35,12 @@ python3 -m http.server 3000
 2. Kliknij swoje **zdjęcie profilowe** (prawy górny róg) → **Ustawienia**
 3. Kliknij zakładkę **"Your apps"** po lewej stronie
 4. Kliknij **"+ Create new app"**
-5. Wpisz nazwę: **Dice Roller** → kliknij **"Create app"**
+5. Wpisz nazwę: **Kostki RPG** → kliknij **"Create app"**
 6. Kliknij **"Edit in Manifest"** (otwiera się edytor tekstowy)
 7. **Usuń cały tekst** i wklej poniższy kod:
 
 ```yaml
-appName: Dice Roller
+appName: Kostki RPG
 sdkVersion: SDK_V2
 sdkUri: http://localhost:3000
 scopes:
@@ -60,7 +60,7 @@ scopes:
 1. Otwórz dowolną tablicę Miro
 2. Po lewej stronie znajdź ikonę **🎲**
    - Jeśli jej nie widać: kliknij **"..."** lub **"+ More apps"** na dole paska
-3. Kliknij ikonę → po prawej stronie otwiera się panel **"Dice Roller"**
+3. Kliknij ikonę → po prawej stronie otwiera się panel **"Kostki RPG"**
 
 ### Jak rzucić kośćmi:
 4. Kliknij typ kości (np. **d20**) lub wpisz notację ręcznie (np. `2d6+3`)
@@ -87,7 +87,7 @@ scopes:
    ```
 
 ### Zaktualizuj Miro:
-5. Wróć do **miro.com** → Ustawienia → Your apps → **Dice Roller** → **Edit in Manifest**
+5. Wróć do **miro.com** → Ustawienia → Your apps → **Kostki RPG** → **Edit in Manifest**
 6. Zmień `http://localhost:3000` na swój URL z GitHub Pages:
    ```yaml
    sdkUri: https://twoj-login.github.io/nazwa-repo
