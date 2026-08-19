@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dice Roller</title>
+  <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+  <script src="https://unpkg.com/mathjs@11.8.2/lib/browser/math.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/random-js@2.1.0/dist/random-js.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@dice-roller/rpg-dice-roller@5.5.1/lib/umd/bundle.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: #fff;
+      color: #1a1a2e;
+    }
+    h1 { font-size: 18px; margin-bottom: 16px; }
+    .btn {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:active { opacity: 0.7; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-block { display: block; width: 100%; }
+    .btn-preset { background: #f0f0f0; color: #333; padding: 8px 0; font-size: 13px; }
+    .btn-preset.active { background: #4262ff; color: #fff; }
+    .btn-adv { background: #eef1ff; color: #4262ff; font-size: 12px; }
+    .btn-roll { background: #4262ff; color: #fff; font-size: 15px; padding: 14px 16px; margin-top: 10px; }
+    .btn-board { background: #f0f0f0; color: #555; font-size: 12px; margin-top: 8px; }
+    hr { border: none; border-top: 1px solid #e8e8e8; margin: 14px 0; }
+    .hint { font-size: 11px; color: #999; margin-top: 4px; line-height: 1.4; }
+
+    .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+
+    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .row label { font-size: 11px; color: #888; white-space: nowrap; }
+    .qty-input {
+      width: 56px; padding: 6px 8px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px;
+    }
+    .notation-input {
+      flex: 1; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px;
+      font-family: 'SFMono-Regular', Menlo, monospace;
+    }
+    .adv-row { display: flex; gap: 8px; margin-bottom: 4px; }
+    .adv-row .btn { flex: 1; }
+
+    #result-box {
+      background: #f4f4f6;
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 14px;
+      text-align: center;
+      min-height: 78px;
+    }
+    #result-total { font-size: 34px; font-weight: 700; color: #4262ff; line-height: 1.1; }
+    #result-detail { font-size: 12px; color: #777; margin-top: 6px; word-break: break-word; }
+
+    #status {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #c0392b;
+      min-height: 16px;
+      white-space: pre-wrap;
+    }
+
+    #log {
+      margin-top: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+    .log-entry {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 12px;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-name { font-weight: 600; color: #333; }
+    .log-notation { color: #4262ff; font-family: Menlo, monospace; margin: 0 4px; }
+    .log-total { font-weight: 700; }
+    .log-detail { color: #999; font-size: 11px; margin-top: 2px; }
+    .log-empty { padding: 14px; text-align: center; color: #aaa; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>🎲 Dice Roller</h1>
+
+  <div class="preset-grid" id="preset-grid">
+    <button class="btn btn-preset" data-sides="4">d4</button>
+    <button class="btn btn-preset" data-sides="6">d6</button>
+    <button class="btn btn-preset" data-sides="8">d8</button>
+    <button class="btn btn-preset" data-sides="10">d10</button>
+    <button class="btn btn-preset" data-sides="12">d12</button>
+    <button class="btn btn-preset" data-sides="20">d20</button>
+    <button class="btn btn-preset" data-sides="100">d100</button>
+  </div>
+
+  <div class="row">
+    <label>Liczba kości</label>
+    <input type="number" class="qty-input" id="qty-input" min="1" max="100" value="1">
+    <span class="hint" style="margin-top:0;">Kliknij typ kości powyżej, żeby zbudować notację.</span>
+  </div>
+
+  <div class="row">
+    <input type="text" class="notation-input" id="notation-input" placeholder="np. 2d6+3, 4d6kh3, 2d20kh1" value="1d20">
+  </div>
+  <p class="hint">Możesz też wpisać notację ręcznie — obsługiwane są modyfikatory (+/-), keep/drop (kh/kl/dh/dl) i inne.</p>
+
+  <div class="adv-row">
+    <button class="btn btn-adv" id="btn-adv">⬆️ Advantage (d20)</button>
+    <button class="btn btn-adv" id="btn-disadv">⬇️ Disadvantage (d20)</button>
+  </div>
+
+  <button class="btn btn-roll btn-block" id="btn-roll">🎲 Rzuć</button>
+
+  <div id="status"></div>
+
+  <div id="result-box">
+    <div id="result-total">—</div>
+    <div id="result-detail">Wybierz kość i kliknij "Rzuć".</div>
+  </div>
+
+  <button class="btn btn-board btn-block" id="btn-post">📌 Wyślij wynik na tablicę</button>
+  <p class="hint">Umieszcza ostatni wynik jako element tekstowy na tablicy, widoczny dla wszystkich — nawet bez otwartego panelu.</p>
+
+  <hr/>
+
+  <div class="row" style="margin-bottom:6px;">
+    <label style="font-size:12px; color:#555; font-weight:600;">Log rzutów (na żywo)</label>
+  </div>
+  <div id="log"><div class="log-empty">Brak rzutów jeszcze.</div></div>
+
+  <script>
+    const MAX_DICE = 100;
+    const COLLECTION_NAME = 'diceRoller';
+    const STORAGE_KEY = 'rollLog';
+    const MAX_LOG_ENTRIES = 30;
+
+    const qtyInput      = document.getElementById('qty-input');
+    const notationInput = document.getElementById('notation-input');
+    const statusEl      = document.getElementById('status');
+    const resultTotal   = document.getElementById('result-total');
+    const resultDetail  = document.getElementById('result-detail');
+    const logEl         = document.getElementById('log');
+    const btnRoll       = document.getElementById('btn-roll');
+    const btnPost       = document.getElementById('btn-post');
+    const btnAdv        = document.getElementById('btn-adv');
+    const btnDisadv     = document.getElementById('btn-disadv');
+
+    let currentUserName = 'Gracz';
+    let lastRollText = null;
+    let flickerTimer = null;
+
+    function setStatus(msg) { statusEl.textContent = msg || ''; }
+
+    // ── Presety kości ────────────────────────────────────────────
+    document.getElementById('preset-grid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-preset');
+      if (!btn) return;
+      const sides = btn.dataset.sides;
+      const qty = Math.max(1, Math.min(MAX_DICE, parseInt(qtyInput.value) || 1));
+      notationInput.value = `${qty}d${sides}`;
+      setStatus('');
+    });
+
+    btnAdv.addEventListener('click', () => {
+      notationInput.value = '2d20kh1';
+      setStatus('');
+    });
+    btnDisadv.addEventListener('click', () => {
+      notationInput.value = '2d20kl1';
+      setStatus('');
+    });
+
+    // ── Ochrona przed za dużą liczbą kości ──────────────────────
+    function countRequestedDice(notation) {
+      let total = 0;
+      const re = /(\d+)\s*d\s*\d+/gi;
+      let m;
+      while ((m = re.exec(notation)) !== null) {
+        total += parseInt(m[1], 10);
+      }
+      return total;
+    }
+
+    // ── Rzut ─────────────────────────────────────────────────────
+    btnRoll.addEventListener('click', async () => {
+      const notation = notationInput.value.trim();
+      if (!notation) {
+        setStatus('❌ Wpisz notację albo wybierz kość z presetów.');
+        return;
+      }
+
+      const diceCount = countRequestedDice(notation);
+      if (diceCount > MAX_DICE) {
+        setStatus(`❌ Za dużo kości naraz (${diceCount}). Maksimum to ${MAX_DICE}.`);
+        return;
+      }
+
+      let roll;
+      try {
+        const roller = new rpgDiceRoller.DiceRoller();
+        roll = roller.roll(notation);
+      } catch (err) {
+        setStatus(`❌ Zła notacja: ${err.message}`);
+        return;
+      }
+
+      setStatus('');
+      btnRoll.disabled = true;
+
+      const total = roll.total;
+      const detail = roll.output || String(roll);
+
+      // krótka animacja "losowania" cyfr
+      await animateResult(total);
+      resultDetail.textContent = detail;
+
+      lastRollText = `🎲 ${currentUserName}: ${notation} → ${detail}`;
+
+      await appendToLog({
+        name: currentUserName,
+        notation,
+        total,
+        detail,
+        ts: Date.now(),
+      });
+
+      btnRoll.disabled = false;
+    });
+
+    function animateResult(finalValue) {
+      return new Promise((resolve) => {
+        if (flickerTimer) clearInterval(flickerTimer);
+        let ticks = 0;
+        const maxTicks = 8;
+        flickerTimer = setInterval(() => {
+          ticks++;
+          resultTotal.textContent = Math.floor(Math.random() * 20) + 1;
+          if (ticks >= maxTicks) {
+            clearInterval(flickerTimer);
+            flickerTimer = null;
+            resultTotal.textContent = finalValue;
+            resolve();
+          }
+        }, 70);
+      });
+    }
+
+    // ── Wyślij wynik na tablicę ─────────────────────────────────
+    btnPost.addEventListener('click', async () => {
+      if (!lastRollText) {
+        setStatus('❌ Najpierw wykonaj rzut.');
+        return;
+      }
+      btnPost.disabled = true;
+      try {
+        const viewport = await miro.board.viewport.get();
+        const x = viewport.x + viewport.width / 2 + (Math.random() - 0.5) * 100;
+        const y = viewport.y + viewport.height / 2 + (Math.random() - 0.5) * 100;
+        await miro.board.createText({
+          content: lastRollText,
+          x,
+          y,
+          width: 300,
+          style: { fontSize: 16, textAlign: 'center' },
+        });
+        setStatus('✅ Wynik dodany do tablicy.');
+      } catch (err) {
+        setStatus(`❌ Błąd: ${err.message}`);
+      }
+      btnPost.disabled = false;
+    });
+
+    // ── Log rzutów (live sync przez storage) ────────────────────
+    function renderLog(entries) {
+      if (!entries || entries.length === 0) {
+        logEl.innerHTML = '<div class="log-empty">Brak rzutów jeszcze.</div>';
+        return;
+      }
+      logEl.innerHTML = entries.slice().reverse().map(e => `
+        <div class="log-entry">
+          <span class="log-name">${escapeHtml(e.name)}</span>
+          <span class="log-notation">${escapeHtml(e.notation)}</span>
+          →
+          <span class="log-total">${e.total}</span>
+          <div class="log-detail">${escapeHtml(e.detail)}</div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    async function appendToLog(entry) {
+      const col = miro.board.storage.collection(COLLECTION_NAME);
+      const existing = (await col.get(STORAGE_KEY)) || [];
+      const updated = [...existing, entry].slice(-MAX_LOG_ENTRIES);
+      await col.set(STORAGE_KEY, updated);
+    }
+
+    // ── Inicjalizacja ────────────────────────────────────────────
+    (async () => {
+      try {
+        const user = await miro.board.getUserInfo();
+        if (user && user.name) currentUserName = user.name;
+      } catch (e) { /* brak identity:read lub błąd — zostaw domyślną nazwę */ }
+
+      const col = miro.board.storage.collection(COLLECTION_NAME);
+      renderLog((await col.get(STORAGE_KEY)) || []);
+      col.onValue(STORAGE_KEY, (value) => renderLog(value));
+    })();
+  </script>
+</body>
+</html>
